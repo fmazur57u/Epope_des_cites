@@ -1,4 +1,4 @@
-# Epope des cites
+# Épopée des Cités Perdues
 
 ### Thème du projet : "L’Épopée des Cités Perdues"
 
