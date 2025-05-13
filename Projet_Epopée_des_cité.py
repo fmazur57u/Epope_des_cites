@@ -94,3 +94,25 @@ def load_json(
         print(f"Erreur de décodage : {e}")
         return {}
     return data
+
+
+def jouer_une_session(filename: str):
+    environnement = load_json(filename)
+    joueur = Joueur(vie=100, force=10, inventaires={"or": 0})
+    i = 0
+    while i != -1:
+        print("Bienvenue au village de Valun.")
+        print(
+            "Veuillez choisir une action entre: 1: Voir la liste des alliés du village et 2: Sortir du village"
+        )
+        match i:
+            case 1:
+                allie = [
+                    personnage
+                    for personnage in environnement["personnages"]
+                    if personnage["type"] == "allié"
+                ]
+                print(
+                    "Voici la liste des alliés disponible que vous pouvez payer:", allie
+                )
+                choix_allie = input()
