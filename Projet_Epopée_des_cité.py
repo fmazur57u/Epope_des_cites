@@ -2,94 +2,42 @@ from typing import List, Dict, Union
 import json
 
 
-class Personnage:
-    """Classes mére qui réprésente tous type de personnage avec un nom, un type, des points de force et un dialogue.
-    Cette classe permet au personnage d'attaquer un ennemie et de soit réussir à tuer l'ennemie, soit le personnage se fait tuer.
+class Joueur:
 
-    Attributs:
-        nom (str): Le nom du personnage.
-        type (str): Le type de personnage.
-        force (int): Les points de force du personnage.
-        dialogue (str): Le dialogue du personnage.
-
-    Exemples:
-        >>> liste_personnages = [
-            {"nom": "Arwen", "type": "allié", "force": 5, "dialogue": "Je peux t'aider à explorer, mais il me faut 10 unités d'or."},
-            {"nom": "Serpent Géant", "type": "ennemi", "force": 8, "dialogue": "Sssss... Tu ne passeras pas !"}
-        ]
-        >>> allie = Personnage("Arwen", "Allié", 5, "Je peux t'aider à explorer, mais il me faut 10 unités d'or.")
-        >>> ennemie = Personnage("Serpent Géant", "ennemie", 8, "Sssss... Tu ne passeras pas !")
-        >>> liste_personnages = allie.attaquer(ennemie, liste_personnages)
-        "L'ennemie vous à tuer."
-        >>> print(liste_personnages)
-        [
-            {"nom": "Serpent Géant", "type": "ennemi", "force": 8, "dialogue": "Sssss... Tu ne passeras pas !"}
-        ]
-        >>> allie = Personnage("Arwen", 10, "Je peux t'aider à explorer, mais il me faut 10 unités d'or.")
-        >>> liste_personnages = allie.attaquer(ennemie, liste_personnages)
-        "Vous avez réussie à tuer l'ennemie."
-        >>> print(liste_personnages)
-        [
-            {"nom": "Arwen", "type": "allié", "force": 5, "dialogue": "Je peux t'aider à explorer, mais il me faut 10 unités d'or."}
-        ]
-
-    """
-
-    def __init__(self, nom: str, type: str, force: int, dialogue: str):
-        """Initialise un nouveau personnage.
-
-        Args:
-            nom (str): Le nom du personnage.
-            type (str): Le type du personnage.
-            force (int): La force du personnage.
-            dialoguie (str): Le dialogue du personnage.
-        """
-        self.nom = nom
-        self.type = type
+    def __init__(self, vie: int, force: int, inventaires: Dict[str, int]):
+        self.vie = vie
         self.force = force
-        self.dialogue = dialogue
+        self.inventaires = inventaires
 
-    def attaquer(
-        self, ennemie: object, personnages_jeu: List[Dict[str, Union[str, int]]]
-    ) -> List[Dict[str, Union[str, int]]]:
-        """Fonction qui décrit la capacité d'attaquer d'un personnage.
-        Si le personnage à une force inférieur a celle de l'ennemie,
-        il meurt et sera supprimer du jeu.
+    def afficher_lieux(self, lieux: List[Dict[str, Union[str, List[str]]]]) -> None:
+        liste_des_lieux = [
+            f"nom: {lieu["nom"]}, description: {lieu["description"]}, ressources :{lieu["ressources"]}, ennemis: {lieu["ennemis"]}"
+            for lieu in lieux
+        ]
+        print(liste_des_lieux)
 
-        Args:
-            ennemie (object): Un personnage ennemie.
-            personnages_jeu (List[Dict[str, Union[str, int]]]): Tous les personnages du jeu encore disponible.
+    def verification_inventaire(self) -> None:
+        print(self.inventaires)
 
-        Returns:
-            List[Dict[str, Union[str, int]]]: La liste des personnages restants.
+    def ajout_objet_inventaire(self, ressource: str) -> None:
+        self.inventaires[ressource["nom"]] += ressource["quantite"]
+        print(f"Vous avez récupérer {ressource["quantite"]} de {ressource["nom"]}")
 
-        Exemples:
-            >>> liste_personnages = [
-                {"nom": "Arwen", "type": "allié", "force": 5, "dialogue": "Je peux t'aider à explorer, mais il me faut 10 unités d'or."},
-                {"nom": "Serpent Géant", "type": "ennemi", "force": 8, "dialogue": "Sssss... Tu ne passeras pas !"}
-            ]
-            >>> allie = Personnage("Arwen", "Allié", 5, "Je peux t'aider à explorer, mais il me faut 10 unités d'or.")
-            >>> ennemie = Personnage("Serpent Géant", "ennemie", 8, "Sssss... Tu ne passeras pas !")
-            >>> liste_personnages = allie.attaquer(ennemie, liste_personnages)
-            "L'ennemie vous à tuer."
-            >>> print(liste_personnages)
-            [
-                {"nom": "Serpent Géant", "type": "ennemi", "force": 8, "dialogue": "Sssss... Tu ne passeras pas !"}
-            ]
-            >>> allie = Personnage("Arwen", 10, "Je peux t'aider à explorer, mais il me faut 10 unités d'or.")
-            >>> liste_personnages = allie.attaquer(ennemie, liste_personnages)
-            "Vous avez réussie à tuer l'ennemie."
-            >>> print(liste_personnages)
-            [
-                {"nom": "Arwen", "type": "allié", "force": 5, "dialogue": "Je peux t'aider à explorer, mais il me faut 10 unités d'or."}
-            ]
-        """
-        if ennemie.force > self.force:
-            print("L'ennemie vous à tuer.")
-            return delete_personnage(self, personnages_jeu)
+    def payer_allie(self, allie: Dict[str, Union[str, int]]) -> None:
+        print(allie["dialogue"])
+        prix = allie["dialogue"].split()[-3]
+        if prix > self.inventaires["or"]:
+            print(f"Vous n'avez pas assez d'or pour payer {allie["nom"]}.")
         else:
-            print("Vous avez réussie à tuer l'ennemie.")
-            return delete_personnage(ennemie, personnages_jeu)
+            self.inventaires["or"] -= prix
+            self.force += allie["force"]
+
+    def attaquer(self, ennemi: Dict[str, Union[str, int]]) -> None:
+        if self.force < ennemi["force"]:
+            self.vie -= ennemi["force"]
+            print(f"L'ennemi vous fait {ennemi["force"]} de point de dégats.")
+        else:
+            print(f"Vous avez tuer un {ennemi["nom"]}.")
 
 
 def load_json(
@@ -146,56 +94,3 @@ def load_json(
         print(f"Erreur de décodage : {e}")
         return {}
     return data
-
-
-def delete_personnage(
-    personnage: object, personnages_jeu: List[Dict[str, Union[str, int]]]
-) -> List[Dict[str, Union[str, int]]]:
-    """Fonction qui permet de supprimer un personnage.
-
-    Args:
-        personnage (object): Un personnage instancier avec la classe Personnage.
-        personnages_jeu (List[Dict[str, Union[str, int]]]): Liste de dictionnaire
-        qui représente la liste des personnages encore disponible dans la partie.
-
-    Returns:
-        List[Dict[str, Union[str, int]]]: La liste des personnages restants.
-
-    Exemples:
-        >>> liste_personnages = [
-                {"nom": "Arwen", "type": "allié", "force": 5, "dialogue": "Je peux t'aider à explorer, mais il me faut 10 unités d'or."},
-                {"nom": "Serpent Géant", "type": "ennemi", "force": 8, "dialogue": "Sssss... Tu ne passeras pas !"}
-            ]
-        >>> allie = Personnage("Arwen", "Allié", 5, "Je peux t'aider à explorer, mais il me faut 10 unités d'or.")
-        >>> liste_personnage = delete_personnage(allie, liste_personnages)
-        >>> print(liste_personnage)
-        [
-                {"nom": "Serpent Géant", "type": "ennemi", "force": 8, "dialogue": "Sssss... Tu ne passeras pas !"}
-        ]
-    """
-    for p in personnages_jeu:
-        if p["nom"] == personnage.nom:
-            personnages_jeu.remove(p)
-            return personnages_jeu
-
-
-"""test"""
-
-data = load_json("data.json")
-print(data)
-liste_personnages = data["personnages"]
-print(liste_personnages)
-allie = liste_personnages[0]
-ennemie = liste_personnages[1]
-allie = Personnage(allie["nom"], allie["type"], allie["force"], allie["dialogue"])
-ennemie = Personnage(
-    ennemie["nom"], ennemie["type"], ennemie["force"], ennemie["dialogue"]
-)
-
-liste_personnages = allie.attaquer(ennemie, liste_personnages)
-print(liste_personnages)
-allie.force = 20
-data = load_json("data.json")
-liste_personnages = data["personnages"]
-liste_personnages = allie.attaquer(ennemie, liste_personnages)
-print(liste_personnages)
